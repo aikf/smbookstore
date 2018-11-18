@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context" xmlns:tx="http://www.springframework.org/schema/tx"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd">
+    <!--1 引入属性文件，在配置中占位使用 -->
+    <context:property-placeholder location="classpath:db.properties"/>
+    <!--2 配置C3P0数据源 -->
+    <bean id="dataSource" class="com.mchange.v2.c3p0.ComboPooledDataSource">
+        <property name="driverClass" value="${jdbc.driver}"/>
+        <property name="jdbcUrl" value="${jdbc.url}"/>
+        <property name="user" value="${jdbc.uid}"/>
+        <property name="password" value="${jdbc.pwd}"/>
+    </bean>
+    <!--3 会话工厂bean sqlSessionFactoryBean -->
+    <bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+        <property name="dataSource" ref="dataSource"/>
+        <property name="typeAliasesPackage" value="com.xym.bookstore.entities"/>
+        <property name="mapperLocations" value="classpath:com/xym/bookstore/mapper/*.xml"/>
+    </bean>
+    <!--4 自动扫描对象关系映射 -->
+    <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+        <property name="sqlSessionFactoryBeanName" value="sqlSessionFactory"/>
+        <property name="basePackage" value="com.xym.bookstore.mapper"/>
+    </bean>
+
+    <!--5 声明式事务管理 -->
+    <!--定义事物管理器，由spring管理事务 -->
+    <bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+        <property name="dataSource" ref="dataSource"/>
+    </bean>
+    <!--支持注解驱动的事务管理，指定事务管理器 -->
+    <tx:annotation-driven transaction-manager="transactionManager"/>
+
+    <context:component-scan base-package="com.xym.bookstore"/>
+
+    <!--<bean id="bookService" class="com.xym.bookstore.service.BookService">-->
+        <!--<property name="bookMapper" ref="bookMapper"/>-->
+    <!--</bean>-->
+</beans>
